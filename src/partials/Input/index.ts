@@ -9,13 +9,18 @@ export class Input {
   }
 
   #partials = {
-    rgba: new InputRGBA(({ r, g, b, a }) => {
-      const { h, s, v } = rgb2hsv(r, g, b)
-
+    rgba: new InputRGBA((key, { r, g, b, a }) => {
       const { hue, saturation, value, alpha } = this.store.get()
 
-      if (h !== hue || saturation !== s || value !== v || alpha !== a) {
-        console.log(h, s, v, a)
+      if (key === 'a') {
+        if (alpha !== a) this.store.set({ alpha: a / 100 })
+
+        return
+      }
+
+      const { h, s, v } = rgb2hsv(r, g, b)
+
+      if (h !== hue || saturation !== s || value !== v) {
         this.store.set({
           hue: h,
           saturation: s,

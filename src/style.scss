@@ -32,7 +32,7 @@ body {
   }
 }
 
-.display {
+.saturation {
   position: relative;
   --size: 20px;
 
@@ -42,7 +42,7 @@ body {
     height: 300px;
   }
 
-  &__handler {
+  &__pointer {
     position: absolute;
     top: var(--y);
     left: var(--x);
@@ -57,53 +57,21 @@ body {
   }
 }
 
-.rainbow {
-  position: relative;
-  --size: 20px;
-
-  &__canvas {
-    display: block;
-    border-radius: calc(var(--size) / 2);
-    width: 100%;
-    height: var(--size);
-  }
-
-  &__track {
-    position: absolute;
-    inset: 0 calc(var(--size) / 2);
-  }
-
-  &__handler {
-    position: absolute;
-    top: 50%;
-    left: var(--x);
-    padding: 0;
-    border: 2px solid #fff;
-    border-radius: 50%;
-    outline: 1px solid #000;
-    width: calc(var(--size) - 2px);
-    height: calc(var(--size) - 2px);
-    background: var(--color);
-    transform: translate(-50%, -50%);
-  }
-}
-
-.opacity {
+.handler {
   position: relative;
   display: block;
-  box-shadow: inset 0 0 0 1px #000;
-  background-image: linear-gradient(to right, rgba(0,0,0,0) 0%, var(--color) 100%);
   border-radius: calc(var(--size) / 2);
   width: 100%;
   height: var(--size);
   --size: 20px;
+  --x: calc(var(--progress) * 100%);
 
   &__track {
     position: absolute;
     inset: 0 calc(var(--size) / 2);
   }
 
-  &__handler {
+  &__pointer {
     position: absolute;
     top: 50%;
     left: var(--x);
@@ -115,14 +83,46 @@ body {
     height: calc(var(--size) - 2px);
     transform: translate(-50%, -50%);
     background: none;
+  }
 
-    &:before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
+  &_hue {
+    background-image: linear-gradient(to right, var(--colors));
+
+    .handler__pointer {
       background: var(--color);
-      opacity: var(--opacity);
     }
+  }
+
+  &_opacity {
+    box-shadow: inset 0 0 0 1px #000;
+    background-image: linear-gradient(to right, rgba(0,0,0,0) 0%, var(--color) 100%);
+
+    .handler__pointer {
+      background: none;
+
+      &:before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: var(--color);
+        opacity: var(--progress);
+      }
+    }
+  }
+}
+
+.rgba {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+
+  input {
+    display: block;
+    padding: 0 12px;
+    height: 30px;
+    width: 100%;
+    font-size: 14px;
+    line-height: normal;
   }
 }

@@ -1,19 +1,8 @@
 import { Color } from './Color'
-import { events } from '../utils/events'
 import { Store } from '../Store'
+import { Handler } from './Handler'
 
 export class Hue {
-  #refs = {
-    container: document.createElement('div'),
-    canvas: document.createElement('canvas'),
-    track: document.createElement('div'),
-    handler: document.createElement('button'),
-  }
-
-  private get context() {
-    return this.#refs.canvas.getContext('2d')
-  }
-
   #state: {
     colors: Color[]
     color: Color | null
@@ -26,113 +15,53 @@ export class Hue {
     x: 0,
   }
 
+  #handler = new Handler({
+    onMounted: () => {
+      this.draw()
+      this.setState(this.store.get().hue)
+    },
+    onChange: (progress) => {
+      this.#state.x = progress * 100
+
+      this.#state.color = new Color(progress, 1, 1)
+
+      this.#handler.refs.container.style.setProperty(
+        '--color',
+        this.#state.color.stringifyRGB()
+      )
+
+      if (this.store.get().hue !== progress) this.store.set({ hue: progress })
+    },
+  })
+
   constructor(private store: Store) {
     this.store.listen((next, prev) => {
-      if (next.hue !== prev.hue) this.moveTo(next.hue)
+      if (next.hue !== prev.hue) this.setState(next.hue)
     })
+
+    this.#handler.refs.container.classList.add('handler_hue')
   }
 
   public mount = (container: HTMLElement): void => {
-    this.#refs.container.classList.add('rainbow')
-    this.#refs.canvas.classList.add('rainbow__canvas')
-    this.#refs.track.classList.add('rainbow__track')
-    this.#refs.handler.classList.add('rainbow__handler')
-
-    this.#refs.container.appendChild(this.#refs.canvas)
-    this.#refs.container.appendChild(this.#refs.track)
-    this.#refs.track.appendChild(this.#refs.handler)
-    container.appendChild(this.#refs.container)
-
-    this.draw()
-    this.addListeners()
-    this.moveTo(this.store.get().hue)
+    this.#handler.mount(container)
   }
 
   private draw = (): void => {
-    if (!this.context) return
+    const colors = this.#state.colors
+      .map(
+        (color, i, { length }) =>
+          `${color.stringifyRGB()} ${(i / (length - 1)) * 100}%`
+      )
+      .join(', ')
 
-    this.#refs.canvas.width = this.#refs.canvas.offsetWidth
-    this.#refs.canvas.height = this.#refs.canvas.offsetHeight
-
-    const gradient = this.context.createLinearGradient(
-      0,
-      0,
-      this.#refs.canvas.width,
-      0
-    )
-
-    this.#state.colors.forEach((color, i, { length }) =>
-      gradient.addColorStop(i / (length - 1), color.stringifyRGB())
-    )
-
-    this.context.fillStyle = gradient
-    this.context.fillRect(
-      0,
-      0,
-      this.#refs.canvas.width,
-      this.#refs.canvas.height
-    )
-
-    this.setState(this.#state.x)
-  }
-
-  private addListeners = (): void => {
-    this.#refs.container.addEventListener(events().start, this.onStart)
-  }
-
-  private onStart = (e: Event): void => {
-    if (!(e instanceof MouseEvent)) return
-
-    this.setState(e.clientX)
-
-    document.addEventListener(events().move, this.onMove)
-    document.addEventListener(events().end, this.onEnd)
-  }
-
-  private onMove = (e: Event): void => {
-    if (!(e instanceof MouseEvent)) return
-    this.setState(e.clientX)
-  }
-
-  private onEnd = (e: Event): void => {
-    if (!(e instanceof MouseEvent)) return
-
-    this.setState(e.clientX)
-
-    document.removeEventListener(events().move, this.onMove)
-    document.removeEventListener(events().end, this.onEnd)
-  }
-
-  private setState = (clientX: number): void => {
-    const { left, width } = this.#refs.track.getBoundingClientRect()
-
-    const x = Math.min(width, Math.max(clientX - left, 0))
-
-    this.#state.x = (x / width) * 100
-
-    this.#refs.container.style.setProperty('--x', `${this.#state.x}%`)
-
-    const h = this.#state.x / 100
-
-    this.#state.color = new Color(h, 1, 1)
-
-    this.#refs.container.style.setProperty(
-      '--color',
-      this.#state.color.stringifyRGB()
-    )
-
-    if (this.store.get().hue !== h) this.store.set({ hue: h })
+    this.#handler.refs.container.style.setProperty('--colors', colors)
   }
 
   /**
    * @param  {number} h - **Hue** from **0** to **1**
    * @returns void
    */
-  private moveTo = (h: number): void => {
-    const { left, width } = this.#refs.track.getBoundingClientRect()
-
-    const clientX = left + h * width
-
-    this.setState(clientX)
+  private setState = (h: number): void => {
+    this.#handler.setProgress(h)
   }
 }

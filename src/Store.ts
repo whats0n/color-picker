@@ -16,7 +16,15 @@ export class Store {
 
   public set = (state: Partial<State>): void => {
     const prev = { ...this.#state }
-    this.#state = { ...prev, ...state }
+    const next = { ...prev, ...state }
+
+    const isEqual = Object.entries(prev).every(
+      ([key, value]) => next[key as keyof State] === value
+    )
+
+    if (isEqual) return
+
+    this.#state = next
 
     this.#listeners.forEach((listener) => listener(this.#state, prev))
   }

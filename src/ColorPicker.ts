@@ -14,11 +14,8 @@ export class ColorPicker {
 
   constructor(public container: HTMLElement) {
     this.hue = new Hue(this.#store)
-
     this.saturation = new Saturation(this.#store)
-
     this.opacity = new Opacity(this.#store)
-
     this.input = new Input(this.#store)
 
     this.mount()

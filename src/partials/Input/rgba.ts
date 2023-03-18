@@ -23,22 +23,22 @@ export class InputRGBA {
     a: 0,
   }
 
-  constructor(private onChange: (state: State) => void) {
+  constructor(private onChange: (key: keyof State, state: State) => void) {
     this.prepare()
     this.addListeners()
   }
 
   private prepare = (): void => {
-    this.#refs.container.appendChild(this.#refs.r)
-    this.#refs.container.appendChild(this.#refs.g)
-    this.#refs.container.appendChild(this.#refs.b)
-    this.#refs.container.appendChild(this.#refs.a)
+    this.#refs.container.classList.add('rgba')
 
     Object.entries(this.#refs).forEach(([key, el]) => {
       if (el instanceof HTMLInputElement) {
+        el.type = 'text'
+        el.dataset.rgba = key
         el.inputMode = 'numeric'
         el.minLength = 0
         el.maxLength = key === 'a' ? 100 : 255
+        this.#refs.container.appendChild(el)
       }
     })
   }
@@ -50,7 +50,7 @@ export class InputRGBA {
     this.#refs.a.addEventListener('input', this.onInput.bind(this, 100, 'a'))
   }
 
-  private onInput = (max: number, state: keyof State, event: Event): void => {
+  private onInput = (max: number, key: keyof State, event: Event): void => {
     if (
       !(event instanceof InputEvent) ||
       !(event.target instanceof HTMLInputElement)
@@ -74,9 +74,9 @@ export class InputRGBA {
 
     event.target.value = `${realValue}`
 
-    this.#state[state] = +realValue
+    this.#state[key] = +realValue
 
-    this.onChange(this.#state)
+    this.onChange(key, this.#state)
   }
 
   public mount = (container: HTMLElement): void => {
@@ -90,6 +90,10 @@ export class InputRGBA {
     })
   }
 
+  /**
+   * @param  {number} a - **Alpha** from **0** to **1**
+   * @returns void
+   */
   public setAlpha = (a: number): void => {
     this.#state.a = Math.round(a * 100)
     this.#refs.a.value = `${this.#state.a}`

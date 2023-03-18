@@ -34,15 +34,15 @@ export class Saturation {
         next.saturation !== this.#state.saturation ||
         next.value !== this.#state.value
       ) {
-        this.moteTo(next.saturation, next.value)
+        this.set(next.saturation, next.value)
       }
     })
   }
 
   public mount = (container: HTMLElement): void => {
-    this.#refs.container.classList.add('display')
-    this.#refs.canvas.classList.add('display__canvas')
-    this.#refs.handler.classList.add('display__handler')
+    this.#refs.container.classList.add('saturation')
+    this.#refs.canvas.classList.add('saturation__canvas')
+    this.#refs.handler.classList.add('saturation__pointer')
 
     this.#refs.container.appendChild(this.#refs.canvas)
     this.#refs.container.appendChild(this.#refs.handler)
@@ -53,7 +53,7 @@ export class Saturation {
     const { saturation, value, hue } = this.store.get()
 
     this.draw(hue)
-    this.moteTo(saturation, value)
+    this.set(saturation, value)
   }
 
   private draw = (hue: number): void => {
@@ -105,7 +105,7 @@ export class Saturation {
       this.#refs.canvas.height
     )
 
-    this.setState(
+    this.moveTo(
       left + (this.#state.x * width) / 100,
       top + (this.#state.y * height) / 100
     )
@@ -118,7 +118,7 @@ export class Saturation {
   private onStart = (e: Event): void => {
     if (!(e instanceof MouseEvent)) return
 
-    this.setState(e.clientX, e.clientY)
+    this.moveTo(e.clientX, e.clientY)
 
     document.addEventListener(events().move, this.onMove)
     document.addEventListener(events().end, this.onEnd)
@@ -126,19 +126,19 @@ export class Saturation {
 
   private onMove = (e: Event): void => {
     if (!(e instanceof MouseEvent)) return
-    this.setState(e.clientX, e.clientY)
+    this.moveTo(e.clientX, e.clientY)
   }
 
   private onEnd = (e: Event): void => {
     if (!(e instanceof MouseEvent)) return
 
-    this.setState(e.clientX, e.clientY)
+    this.moveTo(e.clientX, e.clientY)
 
     document.removeEventListener(events().move, this.onMove)
     document.removeEventListener(events().end, this.onEnd)
   }
 
-  private setState = (clientX: number, clientY: number): void => {
+  private moveTo = (clientX: number, clientY: number): void => {
     if (!this.context) return
 
     const { top, left, width, height } =
@@ -175,13 +175,18 @@ export class Saturation {
       })
   }
 
-  private moteTo = (saturation: number, value: number): void => {
+  /**
+   * @param  {number} saturation - **Saturation** from **0** to **1**
+   * @param  {number} value - **Value** from **0** to **1**
+   * @returns void
+   */
+  private set = (saturation: number, value: number): void => {
     const { left, top, width, height } =
       this.#refs.canvas.getBoundingClientRect()
 
     const clientY = (-value * 100 + 100) * (height / 100) + top
     const clientX = saturation * 100 * (width / 100) + left
 
-    this.setState(clientX, clientY)
+    this.moveTo(clientX, clientY)
   }
 }
