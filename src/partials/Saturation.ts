@@ -6,7 +6,7 @@ export class Saturation {
   #refs = {
     container: document.createElement('div'),
     canvas: document.createElement('canvas'),
-    handler: document.createElement('button'),
+    pointer: document.createElement('button'),
   }
 
   private get context() {
@@ -42,10 +42,12 @@ export class Saturation {
   public mount = (container: HTMLElement): void => {
     this.#refs.container.classList.add('saturation')
     this.#refs.canvas.classList.add('saturation__canvas')
-    this.#refs.handler.classList.add('saturation__pointer')
+    this.#refs.pointer.classList.add('saturation__pointer')
+
+    this.#refs.pointer.type = 'button'
 
     this.#refs.container.appendChild(this.#refs.canvas)
-    this.#refs.container.appendChild(this.#refs.handler)
+    this.#refs.container.appendChild(this.#refs.pointer)
     container.appendChild(this.#refs.container)
 
     this.addListeners()

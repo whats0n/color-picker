@@ -17,7 +17,7 @@ export class Handler {
   public refs = {
     container: document.createElement('div'),
     track: document.createElement('div'),
-    handler: document.createElement('button'),
+    pointer: document.createElement('button'),
   }
 
   constructor(private props: Props) {}
@@ -25,10 +25,12 @@ export class Handler {
   public mount = (container: HTMLElement): void => {
     this.refs.container.classList.add('handler')
     this.refs.track.classList.add('handler__track')
-    this.refs.handler.classList.add('handler__pointer')
+    this.refs.pointer.classList.add('handler__pointer')
+
+    this.refs.pointer.type = 'button'
 
     this.refs.container.appendChild(this.refs.track)
-    this.refs.track.appendChild(this.refs.handler)
+    this.refs.track.appendChild(this.refs.pointer)
     container.appendChild(this.refs.container)
 
     this.addListeners()
@@ -37,6 +39,7 @@ export class Handler {
 
   private addListeners = (): void => {
     this.refs.container.addEventListener(events().start, this.onStart)
+    this.refs.pointer.addEventListener('keydown', this.onPointer)
   }
 
   private onStart = (e: Event): void => {
@@ -60,6 +63,19 @@ export class Handler {
 
     document.removeEventListener(events().move, this.onMove)
     document.removeEventListener(events().end, this.onEnd)
+  }
+
+  private onPointer = (e: Event): void => {
+    if (
+      !(e instanceof KeyboardEvent) ||
+      !(e.key === 'ArrowRight' || e.key === 'ArrowLeft')
+    )
+      return
+
+    const progress = +this.refs.container.style.getPropertyValue('--progress')
+    const nextProgress = e.key === 'ArrowRight' ? progress + 1 : progress - 1
+
+    this.setProgress(nextProgress / 100)
   }
 
   private moveTo = (clientX: number): void => {
