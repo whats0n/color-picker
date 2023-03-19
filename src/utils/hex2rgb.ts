@@ -2,7 +2,7 @@ export const hex2rgb = (
   value: string
 ): Record<'r' | 'g' | 'b', number> | null => {
   const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i
-  const hex = value.replace(shorthandRegex, function (m, r, g, b) {
+  const hex = value.replace(shorthandRegex, function (_, r, g, b) {
     return r + r + g + g + b + b
   })
 
